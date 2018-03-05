@@ -1,0 +1,22 @@
+.btnLabel {
+  font-size: 38;
+  font-family: System-Regular;
+  font-weight: regular;
+  fill: white;
+  text-anchor: middle;
+}
+
+.operator {
+  font-size: 64;
+}
+
+.enter {
+  font-size: 17;
+  font-family: System-Bold;
+}
+
+#numberDisplay {
+  font-family: Tungsten-Medium;
+  font-size: 60;
+  text-anchor: end;
+}

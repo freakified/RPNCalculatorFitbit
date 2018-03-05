@@ -1,0 +1,45 @@
+{
+  "fitbit": {
+    "appUUID": "3bb0d7f7-44cd-4837-a983-c7f2d4c931a3",
+    "appType": "app",
+    "appDisplayName": "Calculator",
+    "iconFile": "resources/icon.png",
+    "wipeColor": "#ff5722",
+    "requestedPermissions": [],
+    "i18n": {
+      "en": {
+        "name": "Calculator"
+      },
+      "de": {
+        "name": "Rechner"
+      },
+      "ja": {
+        "name": "電卓"
+      },
+      "es": {
+        "name": "Calculadora"
+      },
+      "fr": {
+        "name": "Calculatrice"
+      },
+      "it": {
+        "name": "Calcolatore"
+      },
+      "ko": {
+        "name": "계산자"
+      },
+      "nl": {
+        "name": "Rekenmachine"
+      },
+      "sv": {
+        "name": "Kalkylator"
+      },
+      "zh-cn": {
+        "name": "计算器"
+      },
+      "zh-tw": {
+        "name": "計算器"
+      }
+    }
+  }
+}

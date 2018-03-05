@@ -1,0 +1,28 @@
+<svg>
+  <!--  The buttons are all actually layered PNGs to avoid presumably slow drawing operations -->
+  <image id="keypadButtonBorders" x="0" y="0" width="348" height="250" href="images/keypadButtonBorders.png" load="sync" />
+  <image id="keypadButtonLabels" x="0" y="0" width="348" height="250" href="images/keypadButtonLabels.png" load="sync" />
+  
+  <!--  Active glow effect, which we just move around and hide/unhide during touch events  -->
+  <image id="activeEffect" x="0" y="0" width="250" height="250" href="images/activeEffect.png" load="sync" visibility="hidden" />
+  
+  <!--  Active inverted button layer, which we only reveal for the active button  -->
+  <mask id="keypadButtonLabelsActiveMask">
+    <rect id="activeEffectLabel" width="64" height="47" x="0" y="0" fill="white" visibility="hidden" />
+  </mask>
+  <svg mask="#keypadButtonLabelsActiveMask" width="348" height="250">
+    <image x="0" y="0" width="348" height="250" href="images/keypadButtonLabelsActive.png" load="sync" />
+  </svg>
+  
+  <!--  Literally the only real element  -->
+  <text fill="white"
+        id="numberDisplay"
+        text-length="32"
+        width="40%"
+        x="100%-3"
+        y="55"
+        text-overflow="clip"></text>
+  
+  <!--  Dummy element that handles clicks  -->
+  <rect id="clickableArea" x="0" y="0" width="348" height="250" pointer-events="visible" opacity="0" />
+</svg>
