@@ -7,7 +7,7 @@ export default class Interactions {
     // In many cases, mouseup events will trigger even when the finger is still down.
     // To mitigate this, we ignore mouseup events if followed by subsequent mousemove events
     // within N milliseconds. 50 seems to be the lowest I can get away with using.
-    this._mouseUpIgnoreDelay = 50;
+    this._mouseUpIgnoreDelay = 75;
 
     // lots and lots of pixel values
     this._screenW = 348;
@@ -24,6 +24,7 @@ export default class Interactions {
     
     // eventually holds a reference to the touch end timeout delay
     this._touchEndTimeout = undefined;
+    this._touchInProgress = false;
 
     // current touch position as grid coordinats
     this._gridX = undefined;
@@ -83,21 +84,27 @@ export default class Interactions {
     this._updateActiveEffects();
     
     clearTimeout(this._touchEndTimeout);
+    this._touchEndTimeout = setTimeout(() => { this._touchReallyEnded(); }, this._mouseUpIgnoreDelay);
+    
+    this._touchInProgress = true;
+    //console.log("touchstarted!")
   }
   
   _touchEnded(evt) {
-    clearTimeout(this._touchEndTimeout);
-    this._touchEndTimeout = setTimeout(() => { this._touchReallyEnded(); }, this._mouseUpIgnoreDelay);
+    // clearTimeout(this._touchEndTimeout);
+    // this._touchEndTimeout = setTimeout(() => { this._touchReallyEnded(); }, this._mouseUpIgnoreDelay);
   }
 
   _touchChanged(evt) {
-    this._gridX = Math.floor(evt.screenX / this._screenW * 5);
-    this._gridY = Math.floor(evt.screenY / this._screenH * 4);
+    if(this._touchInProgress === true) {
+      this._gridX = Math.floor(evt.screenX / this._screenW * 5);
+      this._gridY = Math.floor(evt.screenY / this._screenH * 4);
 
-    this._updateActiveEffects();
+      this._updateActiveEffects();
 
-    clearTimeout(this._touchEndTimeout);
-    this._touchEndTimeout = setTimeout(() => { this._touchReallyEnded(); }, this._mouseUpIgnoreDelay);
+      clearTimeout(this._touchEndTimeout);
+      this._touchEndTimeout = setTimeout(() => { this._touchReallyEnded(); }, this._mouseUpIgnoreDelay);
+    }
   }
 
   _touchReallyEnded() {
@@ -109,6 +116,10 @@ export default class Interactions {
     if(this.onbuttonpress) {
       this.onbuttonpress(RPNKeypadLayout[this._gridY][this._gridX]);
     }
+    
+    this._touchInProgress = false;
+    
+    //console.log("touchended!")
   }
 };
 
