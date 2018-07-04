@@ -1,11 +1,15 @@
 import document from 'document'
-
+import { me as device } from "device";
 import Interactions from 'interactions'
-
 import RPNCalculatorModel from 'rpncalculator'
 
-let interactions = new Interactions();
-let calc = new RPNCalculatorModel();
+// evil device detection
+// if the screen is ionic-sized we assume ionic, otherwise we assume versa
+const deviceType = (!device.screen || device.screen.width == 348 && device.screen.height == 250) ? 'Ionic' : 'Versa';
+const maxDigits  = (device == 'Ionic') ? 6 : 7;
+
+let interactions = new Interactions(deviceType);
+let calc = new RPNCalculatorModel(maxDigits);
 
 // document elements
 const numberDisplayEl = document.getElementById("numberDisplay");

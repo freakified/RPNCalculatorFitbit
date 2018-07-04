@@ -1,25 +1,35 @@
 import document from 'document'
 
-import { RPNKeypadLayout } from 'keypadlayouts'
+import { RPNKeypadLayoutIonic, RPNKeypadLayoutVersa } from 'keypadlayouts'
 
 export default class Interactions {
-  constructor() {
+  constructor(deviceType) {
+    const isIonic = (deviceType == 'Ionic');
+    
+    this._keypadLayout = isIonic ? RPNKeypadLayoutIonic : RPNKeypadLayoutVersa;
+    
+    this._gridSizeX = isIonic ? 5 : 4;
+    this._gridSizeY = isIonic ? 4 : 5;
+    
+    this._displayIgnoreRangeL = isIonic ? 3 : 0;
+    this._displayIgnoreRangeH = isIonic ? 5 : 1;
+    
     // In many cases, mouseup events will trigger even when the finger is still down.
     // To mitigate this, we ignore mouseup events if followed by subsequent mousemove events
-    // within N milliseconds. 50 seems to be the lowest I can get away with using.
+    // within N milliseconds. 75 seems to be the lowest I can get away with using.
     this._mouseUpIgnoreDelay = 75;
 
-    // lots and lots of pixel values
-    this._screenW = 348;
-    this._screenH = 250;
-    this._buttonW = 64;
-    this._buttonH = 57;
+    // lots and lots of pixel values oh no
+    this._screenW = isIonic ? 348 : 300;
+    this._screenH = isIonic ? 250 : 300;
+    this._buttonW = isIonic ? 64 : 70;
+    this._buttonH = isIonic ? 57 : 55;
     this._edgeMarginX = 4;
     this._edgeMarginY = 5;
-    this._buttonMarginX = 5;
+    this._buttonMarginX = isIonic ? 5 : 4;
     this._buttonMarginY = 4;
-    this._activeEffectOffsetX = 93;
-    this._activeEffectOffsetY = 96;
+    this._activeEffectOffsetX = isIonic ? 93 : 90;
+    this._activeEffectOffsetY = isIonic ? 96 : 98;
     this._activeEffectLabelOffsetY = 5;
     
     // eventually holds a reference to the touch end timeout delay
@@ -52,7 +62,8 @@ export default class Interactions {
   // "private" functions
   _updateActiveEffects() {
     // don't do anything if the touch was where the numeric display is
-    if(this._gridX >= 3 && this._gridY == 0) {
+    
+    if(this._gridX >= this._displayIgnoreRangeL && this._gridX <= this._displayIgnoreRangeH && this._gridY == 0) {
       return;
     }
     
@@ -78,8 +89,8 @@ export default class Interactions {
   }
   
   _touchStarted(evt) {
-    this._gridX = Math.floor(evt.screenX / this._screenW * 5);
-    this._gridY = Math.floor(evt.screenY / this._screenH * 4);
+    this._gridX = Math.floor(evt.screenX / this._screenW * this._gridSizeX);
+    this._gridY = Math.floor(evt.screenY / this._screenH * this._gridSizeY);
     
     this._updateActiveEffects();
     
@@ -87,18 +98,17 @@ export default class Interactions {
     this._touchEndTimeout = setTimeout(() => { this._touchReallyEnded(); }, this._mouseUpIgnoreDelay);
     
     this._touchInProgress = true;
-    //console.log("touchstarted!")
   }
   
   _touchEnded(evt) {
-    // clearTimeout(this._touchEndTimeout);
-    // this._touchEndTimeout = setTimeout(() => { this._touchReallyEnded(); }, this._mouseUpIgnoreDelay);
+    clearTimeout(this._touchEndTimeout);
+    this._touchEndTimeout = setTimeout(() => { this._touchReallyEnded(); }, this._mouseUpIgnoreDelay);
   }
 
   _touchChanged(evt) {
     if(this._touchInProgress === true) {
-      this._gridX = Math.floor(evt.screenX / this._screenW * 5);
-      this._gridY = Math.floor(evt.screenY / this._screenH * 4);
+      this._gridX = Math.floor(evt.screenX / this._screenW * this._gridSizeX);
+      this._gridY = Math.floor(evt.screenY / this._screenH * this._gridSizeY);
 
       this._updateActiveEffects();
 
@@ -110,16 +120,13 @@ export default class Interactions {
   _touchReallyEnded() {
     this._activeEffectEl.style.visibility = 'hidden';
     this._activeEffectLabelEl.style.visibility = 'hidden';
-    //this._numberDisplayEl.style.opacity = 1;
-
+        
     // fire our "buttonpressed" event
     if(this.onbuttonpress) {
-      this.onbuttonpress(RPNKeypadLayout[this._gridY][this._gridX]);
+      this.onbuttonpress(this._keypadLayout[this._gridY][this._gridX]);
     }
     
     this._touchInProgress = false;
-    
-    //console.log("touchended!")
   }
 };
 

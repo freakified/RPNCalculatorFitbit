@@ -6,6 +6,10 @@
     "iconFile": "resources/icon.png",
     "wipeColor": "#ff5722",
     "requestedPermissions": [],
+    "buildTargets": [
+      "higgs",
+      "meson"
+    ],
     "i18n": {
       "en": {
         "name": "Calculator"

@@ -1,11 +1,14 @@
 export default class RPNCalculatorModel {
-  constructor() {    
-    // 4 registers. if you want to change the number of registers, just change the length of this array
-    // if you need more than 4 registers you want to go home and rethink your life
-    this._stack = [0, 0, 0, 0];
+  constructor(maxDigits) {    
+    // the top of the stack (the x register), is stored as a string so we can 
+    // easily do things like backspace and "6.00"
+    this._stackTop = '0';
+   
+    // the rest of the stack (y, z, and t registers)
+    this._stack = [0, 0, 0];
     
     // the maximum digits that "getDisplay" should return
-    this._maxDigits = 6;
+    this._maxDigits = maxDigits;
     
     // used for tracking how the X register should react to number input
     this._lastAction = 'INPUT';
@@ -36,6 +39,7 @@ export default class RPNCalculatorModel {
           break;
         default:
           console.log(`Unsupported button: ${buttonStr}`);
+        
       }
     } else { // if it was a number just do that
       this.numberPress(buttonStr);
@@ -45,33 +49,28 @@ export default class RPNCalculatorModel {
   numberPress(numberStr) {   
     this._clearIfNeeded();
     
-    let xRegisterStr = this._stack[0].toString();
-    
-    if(this._lastAction == 'POINT')
-      xRegisterStr += '.';
-    
-    xRegisterStr += numberStr; // append the string onto the buffer
-
-    this._stack[0] = parseFloat(xRegisterStr);
-    
+    if(this._stackTop == '0') {
+      this._stackTop = numberStr;
+    } else {
+      this._stackTop += numberStr;
+    }
+        
     this._lastAction = 'INPUT';
   }
   
   pointPress() {
     this._clearIfNeeded();
     
-    if(this._lastAction != 'POINT') {
-      let xRegisterStr = this._stack[0].toString();
-      
-      if(xRegisterStr.indexOf('.') == -1)
-        this._lastAction = 'POINT';
+    if(this._stackTop.indexOf('.') == -1) {
+      this._stackTop += '.';
+      this._lastAction = 'INPUT';
     }
   }
   
   swapPress() {
-    let temp = this._stack[1];
-    this._stack[1] = this._stack[0];
-    this._stack[0] = temp;
+    let temp = this._stack[0];
+    this._stack[0] = parseFloat(this._stackTop);
+    this._stackTop = temp.toString();
   }
   
   backspacePress() {
@@ -80,45 +79,40 @@ export default class RPNCalculatorModel {
     // if the last thing the user did was press ENTER or use an OPERATOR,
     // then the backspace key should just clear the input
     if(this._lastAction == 'ENTER' || this._lastAction == 'OPERATOR' ) {
-      this._stack[0] = 0;
-    } else if(this._lastAction == 'POINT') {
-      // points are lies
+      this._stackTop = '0';
     } else {
-      let xRegisterStr = this._stack[0].toString();
-    
-      if(xRegisterStr.length > 1) {
-        xRegisterStr = xRegisterStr.substring(0, xRegisterStr.length - 1);
-        
-        // make backspace function properly with decimal signs
-        if(xRegisterStr.slice(-1) == '.')
-          residualPoint = true;
-        
-        this._stack[0] = parseFloat(xRegisterStr);
+      if(this._stackTop.length > 1) {
+        this._stackTop = this._stackTop.substring(0, this._stackTop.length - 1);
       } else {
-        this._stack[0] = 0;
+        this._stackTop = 0;
       }
     }
-    this._lastAction = (residualPoint) ? 'POINT' : 'INPUT';
+    this._lastAction = 'INPUT';
   }
   
   operatorPress(operatorStr) {
+    let stackTopFloat = parseFloat(this._stackTop);
+    
     // combine the first two registers
     switch(operatorStr) {
       case 'DIVIDE':
-        this._stack[1] = this._stack[1] / this._stack[0];
+        this._stack[0] = this._stack[0] / stackTopFloat;
         break;
       case 'MULTIPLY':
-        this._stack[1] = this._stack[1] * this._stack[0];
+        this._stack[0] = this._stack[0] * stackTopFloat;
         break;
       case 'ADD':
-        this._stack[1] = this._stack[1] + this._stack[0];
+        this._stack[0] = this._stack[0] + stackTopFloat;
         break;
       case 'SUBTRACT':
-        this._stack[1] = this._stack[1] - this._stack[0];
+        this._stack[0] = this._stack[0] - stackTopFloat;
         break;
     }
+        
+    // set the top of the stack to our result
+    this._stackTop = this._stack[0].toString()
     
-    // murder our old first register 
+    // shuffle the remaining registers over to removee the duplicate
     this._stack.shift();
     
     // stick a zero back on the end to maintain length
@@ -129,45 +123,47 @@ export default class RPNCalculatorModel {
   
   enterPress() {
     // push a copy of the current X register onto the front of our stack
-    this._stack.unshift(this._stack[0]);
+    this._stack.unshift(parseFloat(this._stackTop));
     
     // pop the old element off the end to maintain length
     this._stack.pop();
+    
+    // reformat the stack into a valid number
+    this._stackTop = parseFloat(this._stackTop).toString();
     
     this._lastAction = 'ENTER';
   }
   
   getDisplay() {
-    let xRegisterStr = this._stack[0].toString()
-    // TODO: make this react properly to long decimals
-    if(xRegisterStr.length > this._maxDigits) {
+    let stackTopFloat = parseFloat(this._stackTop);
+    
+    if(this._stackTop.length > this._maxDigits) {
       // if the display is too long we must take action
-      
+      //let displayStr = parseFloat(stackTopFloat.toPrecision(6)).toString();
+            
       //if the number doesn't fit because it's tiny or huge, use scientific notation
       // TODO: make this range dynamically calculated based on maxDigits
-      if(this._stack[0] > 999999 || this._stack[0] < 0.00001) {
-        let expNotation = this._stack[0].toExponential(1)
+      if(Math.abs(parseFloat(this._stackTop)) > 999999 || Math.abs(parseFloat(this._stackTop)) < 0.00001) {
+        let expNotation = stackTopFloat.toExponential(1)
         return (expNotation.length < 8) ? expNotation : 'Error';
       } else {
         // otherwise, we assume that we just need to round it
-        return this._stack[0].toPrecision(6);
+        return parseFloat(stackTopFloat.toPrecision(5)).toString();
       }
     } else {
-      // if the display buffer is empty, show a zero
-      if(this._lastAction == 'POINT')
-        xRegisterStr += '.';
-      
-      return xRegisterStr;
+      return this._stackTop;
     }
   }
   
   _clearIfNeeded() {
-    // if an operator was pressed last, entering a number should shift the registers upward
     if(this._lastAction == 'OPERATOR') {
-      this._stack.unshift(0);
+      // if an operator was pressed last, entering a number should shift the registers upward
+      this._stack.unshift(parseFloat(this._stackTop));
+      this._stackTop = '0';
       this._stack.pop();
     } else if(this._lastAction == 'ENTER') {
-      this._stack[0] = 0;
+      // if ENTER was just pressed, entering a number should zero the x register
+      this._stackTop = '0';
     }
   }
 }
