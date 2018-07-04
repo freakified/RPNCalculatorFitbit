@@ -37,6 +37,8 @@ export default class RPNCalculatorModel {
         case '.':
           this.pointPress();
           break;
+        case 'DISPLAY':
+          break;
         default:
           console.log(`Unsupported button: ${buttonStr}`);
         
@@ -136,6 +138,10 @@ export default class RPNCalculatorModel {
   
   getDisplay() {
     let stackTopFloat = parseFloat(this._stackTop);
+<<<<<<< HEAD
+=======
+    console.log(this._stackTop);
+>>>>>>> 4182b1318f82304dd07cf602d53f2e91fdfddfff
     
     if(this._stackTop.length > this._maxDigits) {
       // if the display is too long we must take action
@@ -148,6 +154,10 @@ export default class RPNCalculatorModel {
         return (expNotation.length < 8) ? expNotation : 'Error';
       } else {
         // otherwise, we assume that we just need to round it
+<<<<<<< HEAD
+=======
+        console.log(`here! ${parseFloat(stackTopFloat.toPrecision(5)).toString()}`);
+>>>>>>> 4182b1318f82304dd07cf602d53f2e91fdfddfff
         return parseFloat(stackTopFloat.toPrecision(5)).toString();
       }
     } else {
